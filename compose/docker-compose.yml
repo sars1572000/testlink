@@ -1,0 +1,43 @@
+version: '3.6'
+
+services:
+  mariadb:
+    image: 'registry.winhuainfo.com/bitnami-mariadb:latest'
+    environment:
+      - MARIADB_USER=testlinkuser
+      - MARIADB_DATABASE=testlink
+      - MARIADB_PASSWORD=2wsx#EDC
+      - MARIADB_ROOT_PASSWORD=2wsx#EDC
+    volumes:
+      - '/data/devops/testlink/mariadb_data:/bitnami'
+    networks:
+      - testlink
+    ports:
+      - 45036:3306
+    restart: on-failure
+  testlink:
+    image: 'registry.winhuainfo.com/bitnami-testlink:1.9.16'
+    environment:
+      - MARIADB_HOST=mariadb
+      - MARIADB_PORT_NUMBER=3306
+      - TESTLINK_DATABASE_USER=testlinkuser
+      - TESTLINK_DATABASE_PASSWORD=2wsx#EDC
+      - TESTLINK_DATABASE_NAME=testlink
+      - ALLOW_EMPTY_PASSWORD=yes
+      - TESTLINK_USERNAME=admin
+      - TESTLINK_PASSWORD=admin
+      - TESTLINK_EMAIL="horizon@winhuainfo.com"
+    ports:
+      - '10280:80'
+      - '10243:443'
+    volumes:
+      - '/data/devops/testlink/testlink_data:/bitnami'
+      - '/data/devops/testlink/const.inc.php:/bitnami/testlink/cfg/const.inc.php'
+      - '/data/devops/testlink/zh_TW:/opt/bitnami/testlink/locale/zh_TW'
+    depends_on:
+      - mariadb
+    networks:
+      - testlink
+    restart: on-failure
+networks:
+  testlink:

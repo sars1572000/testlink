@@ -1,0 +1,24 @@
+variables:
+  DOCKER_HOST_PROD: "192.168.128.190"
+  DOCKER_HOST_PORT: "2376"
+  SSH_USER: "horizon"
+  SSH_KEY: "/home/horizon/.ssh/id_rsa"
+stages:
+  - deploy
+
+########### Deploy Testlink ###########
+deploy-testlink-job:
+  stage: deploy
+  tags:
+    - runner-stg
+  only:
+    - master
+  before_script:
+    - export DOCKER_HOST="${DOCKER_HOST_PROD}:${DOCKER_HOST_PORT}"
+    - sudo ssh -i ${SSH_KEY} ${SSH_USER}@${DOCKER_HOST_PROD} -f "test -e /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/testlink_data || mkdir -p /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/testlink_data"
+    - sudo ssh -i ${SSH_KEY} ${SSH_USER}@${DOCKER_HOST_PROD} -f "test -e /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/mariadb_data || mkdir -p /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/mariadb_data"
+    - sudo scp -r -i ${SSH_KEY} zh_TW ${SSH_USER}@${DOCKER_HOST_PROD}:/data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/
+    - sudo scp -i ${SSH_KEY} const.inc.php ${SSH_USER}@${DOCKER_HOST_PROD}:/data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/
+    - sudo ssh -i ${SSH_KEY} ${SSH_USER}@${DOCKER_HOST_PROD} -f "chmod 775 /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/const.inc.php & chmod 775 -R /data/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/zh_TW"
+  script:
+    - docker-compose -f compose/docker-compose.yml up -d
