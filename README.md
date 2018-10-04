@@ -21,7 +21,7 @@ db DATA path：/data/devops/mariadb_data/
 
 ### 原docker images來源
 
-bitnami/bitnami-docker-testlink:1.9.16
+bitnami/testlink:1.9.16
 
 bitnami/mariadb:latest
 
